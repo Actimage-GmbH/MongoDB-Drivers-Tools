@@ -64,6 +64,9 @@ function DataBase (cfg) {
         });
     };
 
+    this.__driver = require('mongodb');
+    this.errorType = require('mongodb').MongoError;
+
 
     this.close;
 
