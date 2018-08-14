@@ -125,7 +125,7 @@ var currentConf;
 
 module.exports = {
     setErrorHandler: (app) => {
-        let db = require('./database').database(app.get('cfg').database);
+        let db = require('./database')(app.get('cfg').database);
         currentConf = app.get('cfg');
         Errors.DatabaseError = db.errorType;
         DatabaseError = Errors.DatabaseError;
