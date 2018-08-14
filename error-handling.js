@@ -55,15 +55,54 @@ ApiError.prototype.toJSON = function () {
     };
 };
 
-
-var apiHandleError = (error, req, res, next) => {
-    if(currentConf.debug) {
-        console.warn(new Date(), "ApiError: ", error);
-    } else {
-        delete error.stack;
+const AuthError = function(req) {
+    Error.call(this, 'An error occured on path: '+this.path);
+    if(req) {
+        this.path = req.path;
     }
 
+
+};
+AuthError.prototype = Object.create(Error.prototype);
+AuthError.prototype.constructor = AuthError;
+
+
+
+var authHandleError = (error, req, res, next) => {
+
+
+    if(error instanceof AuthError) {
+        if(currentConf.debug) {
+            console.warn(new Date(), "AuthError: ", error);
+        } else {
+            delete error.stack;
+        }
+
+        let code = 400;
+
+
+
+        return res.status(code).json({
+            error: "AuthError",
+            message: error.message,
+            statusCode: code,
+            originalError: null
+        });
+    }
+
+    next(error);
+};
+
+
+var apiHandleError = (error, req, res, next) => {
+
+
     if(error instanceof ApiError) {
+        if(currentConf.debug) {
+            console.warn(new Date(), "ApiError: ", error);
+        } else {
+            delete error.stack;
+        }
         let code = 503;
         let e = error.toJSON();
         if(e.type === 'ValidationError') {
@@ -88,13 +127,14 @@ var apiHandleError = (error, req, res, next) => {
 };
 
 var mongoHandleError = (error, req, res, next) => {
-    if(currentConf.debug) {
-        console.warn(new Date(), "DatabaseError: ", error);
-    } else {
-        delete error.stack;
-    }
+
 
     if(error instanceof DatabaseError) {
+        if(currentConf.debug) {
+            console.warn(new Date(), "DatabaseError: ", error);
+        } else {
+            delete error.stack;
+        }
         return res.status(400).json({
             error: "DatabaseError",
             message: error.message,

@@ -8,16 +8,9 @@ function Collection (DB, name) {
 
     //search in
     this.find = (async function (filter) {
-            let response = {err: null, result: []};
-            try {
-                response.result = await me.db.collection(name).find(filter || {}).toArray();
-
-
-            } catch(e) {
-                response.err = e;
-            }
-            return response;
-        });
+        let response = await me.db.collection(name).find(filter || {}).toArray();
+        return response;
+    });
     //find one
     this.findById = (async function (id) {
         let response = await me.db.collection(name).findOne({_id: new ObjectId(id)});
