@@ -1,11 +1,12 @@
 {
   "name": "theben-cloud-utils",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "author": "Actimage GmbH <baptiste.bellot@actimage.com>",
   "license": "SEE LICENSE IN somewhere.md",
   "dependencies": {
+    "joi": "^13.6.0",
     "mongodb": "^3.1.0"
   }
 }
