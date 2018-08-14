@@ -25,13 +25,7 @@ function Collection (DB, name) {
     });
     //insert one
     this.insertOne =  (async function (user) {
-        let response;
-        try {
-            let response = await me.db.collection(name).insertOne(user || {});
-        } catch (e) {
-            console.log("mongo error",e);
-            throw e;
-        }
+        let response = await me.db.collection(name).insertOne(user || {});
         return response;
     });
     //update
@@ -45,6 +39,12 @@ function Collection (DB, name) {
         if(obj._id) delete obj._id;
         let resp = await me.db.collection(name).update({_id: new ObjectId(id)}, obj, {multiple: false});
         return resp;
+    };
+    //deleteALl
+    this.deleteAll = async function (filter) {
+        let response = await me.db.collection(name).remove(filter);
+
+        return response;
     };
 }
 
