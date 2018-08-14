@@ -25,7 +25,13 @@ function Collection (DB, name) {
     });
     //insert one
     this.insertOne =  (async function (user) {
-        let response = await me.db.collection(name).insertOne(user || {});
+        let response;
+        try {
+            let response = await me.db.collection(name).insertOne(user || {});
+        } catch (e) {
+            console.log("mongo error",e);
+            throw e;
+        }
         return response;
     });
     //update
