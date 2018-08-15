@@ -158,7 +158,8 @@ var defaultHandleError = (req, res) => {
 };
 
 var Errors = {
-    ApiError: ApiError
+    ApiError: ApiError,
+    AuthError: AuthError
 };
 var DatabaseError;
 var currentConf;
