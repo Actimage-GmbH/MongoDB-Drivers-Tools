@@ -19,7 +19,7 @@ function Collection (DB, name) {
     //insert one
     this.insertOne =  (async function (user) {
         let response = await me.db.collection(name).insertOne(user || {});
-        return response;
+        return response.ops.pop();
     });
     //update
     this.update = async function (filter, obj) {
@@ -132,35 +132,35 @@ const ensureConnection = (cfg, __db) => {
 
 };
 /*
-//Create database connection
-(async function() {
-    // Connection URL
-    const url = cfg.database.url;
-    // Database Name
-    const dbName = cfg.database.name;
-    let client;
+ //Create database connection
+ (async function() {
+ // Connection URL
+ const url = cfg.database.url;
+ // Database Name
+ const dbName = cfg.database.name;
+ let client;
 
-    var options = {
-        server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } }
+ var options = {
+ server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } }
 
-    };
+ };
 
-    try {
-        // Use connect method to connect to the Server
-        client = await MongoClient.connect(url, options);
+ try {
+ // Use connect method to connect to the Server
+ client = await MongoClient.connect(url, options);
 
-        __db.db = client.db(dbName);
-        __db.defered.resolve();
-    } catch (err) {
-        console.log("MongoRoot", err.stack);
-    }
+ __db.db = client.db(dbName);
+ __db.defered.resolve();
+ } catch (err) {
+ console.log("MongoRoot", err.stack);
+ }
 
-    if (client) {
-        //client.close();
-        __db.client = client;
-    }
-})();
+ if (client) {
+ //client.close();
+ __db.client = client;
+ }
+ })();
 
-*/
+ */
 
 module.exports = __db;

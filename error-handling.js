@@ -37,6 +37,15 @@ ApiError.prototype.duplicateEntity = function (error, next) {
     next(this);
 };
 
+ApiError.prototype.setUpError = function (message, type, details) {
+    this.message = message;
+    this.e = {
+        name: type,
+        details: details
+    }
+
+};
+
 ApiError.prototype.toString = function () {
     try {
         return JSON.stringify(this.toJSON());
@@ -65,8 +74,9 @@ const AuthError = function(req) {
 };
 AuthError.prototype = Object.create(Error.prototype);
 AuthError.prototype.constructor = AuthError;
-
-
+AuthError.prototype.toJSON = ApiError.prototype.toJSON;
+AuthError.prototype.toString = ApiError.prototype.toString;
+AuthError.prototype.setUpError = ApiError.prototype.setUpError;
 
 var authHandleError = (error, req, res, next) => {
 
@@ -79,14 +89,22 @@ var authHandleError = (error, req, res, next) => {
         }
 
         let code = 400;
+        let e = error.toJSON();
 
+        if(e.type === "AuthenticationError") {
+            res.setHeader("WWW-Authenticate", "Basic");
+            code = 401;
+        }
+        if(e.type === "AccessError") {
+            code = 403;
+        }
 
 
         return res.status(code).json({
             error: "AuthError",
             message: error.message,
             statusCode: code,
-            originalError: null
+            originalError: e
         });
     }
 
@@ -99,7 +117,7 @@ var apiHandleError = (error, req, res, next) => {
 
     if(error instanceof ApiError) {
         if(currentConf.debug) {
-            console.warn(new Date(), "ApiError: ", error);
+            console.warn(new Date(), "ApiError: ", error.toJSON());
         } else {
             delete error.stack;
         }
@@ -146,6 +164,22 @@ var mongoHandleError = (error, req, res, next) => {
 };
 
 
+var anyHandleError = (error, req, res, next) => {
+
+    if(currentConf.debug) {
+        console.warn(new Date(), "Error: ", error);
+    } else {
+        delete error.stack;
+    }
+    return res.status(500).json({
+        error: "UnknownError",
+        message: error.message,
+        originalError: error
+    });
+
+
+};
+
 var defaultHandleError = (req, res) => {
     if(currentConf.debug) {
         console.warn(new Date(), "NotFoundError: ", req.path);
@@ -170,9 +204,12 @@ module.exports = {
         currentConf = app.get('cfg');
         Errors.DatabaseError = db.errorType;
         DatabaseError = Errors.DatabaseError;
+        app.use(authHandleError);
         app.use(apiHandleError);
         app.use(mongoHandleError);
         app.use(defaultHandleError);
+        app.use(anyHandleError);
+
     },
 
     Errors: Errors
