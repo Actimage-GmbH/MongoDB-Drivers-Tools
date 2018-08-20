@@ -3,12 +3,12 @@ function AccessController (cfg) {
 
     let checkPath = req => {
 
-        let access = roles[req.route.path];
+        let access = roles[req.method.toUpperCase()+req.route.path];
         return typeof access !== "undefined" && access !== null;
     };
 
     let checkRole = (req, user) => {
-        let access = roles[req.route.path];
+        let access = roles[req.method.toUpperCase()+req.route.path];
         let r = Object.keys(access);
 
         let getAccessRight = a => {
