@@ -203,7 +203,9 @@ module.exports = {
         let db = require('./database')(app.get('cfg').database);
         currentConf = app.get('cfg');
         Errors.DatabaseError = db.errorType;
+
         DatabaseError = Errors.DatabaseError;
+
         app.use(authHandleError);
         app.use(apiHandleError);
         app.use(mongoHandleError);

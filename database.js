@@ -64,7 +64,13 @@ function DataBase (cfg) {
     };
 
     this.__driver = require('mongodb');
-    this.errorType = require('mongodb').MongoError;
+    this.errorClass = require('mongodb').MongoError;
+    this.errorName = "MongoError";
+
+    this.errorClass.DATABASE_ERR_CODES = {
+        DUPLICATE_ENTRY: 11000
+    };
+    this.errorClass.ERRORS_NAME = "MongoError";
 
 
     this.close;

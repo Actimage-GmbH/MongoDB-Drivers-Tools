@@ -25,8 +25,11 @@ function AccessController (cfg) {
             return false;
         };
         for (let a in r) {
-            if(r[a] === "$authenticated") {
+            if(r[a] === ROLE_KEY.AUTENTICATED) {
                 if(getAccessRight(r[a]))  return true;
+            } else if(r[a] === ROLE_KEY.ACTIVE && user.active === true) {
+
+
             } else if(r[a] in (user.roles || [])) {
                 if(getAccessRight(r[a]))  return true;
             }
@@ -34,7 +37,16 @@ function AccessController (cfg) {
         return false;
     };
     this.checkAccesses = checkRole;
-    this.checkPath = checkPath
+    this.checkPath = checkPath;
 };
+
+const ROLE_KEY = {
+    AUTENTICATED: "$authenticated",
+    ACTIVE: "$active"
+};
+
+
+AccessController.prototype.ROLE_KEY = ROLE_KEY;
+
 
 module.exports = (cfg) => new AccessController(cfg);
