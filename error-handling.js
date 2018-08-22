@@ -28,14 +28,7 @@ ApiError.prototype.missingEntity = function (next) {
     };
     next(this);
 };
-ApiError.prototype.duplicateEntity = function (error, next) {
-    this.message = "Entity already exist, target entity cannot be saved because another entity already contain unique fields with the same value.";
-    this.e = {
-        name: "AlreadyExistingError",
-        details: error.message
-    };
-    next(this);
-};
+
 
 ApiError.prototype.setUpError = function (message, type, details) {
     this.message = message;
@@ -92,7 +85,7 @@ var authHandleError = (error, req, res, next) => {
         let e = error.toJSON();
 
         if(e.type === "AuthenticationError") {
-            res.setHeader("WWW-Authenticate", "Basic");
+            res.setHeader("WWW-Authenticate", "Bearer");
             code = 401;
         }
         if(e.type === "AccessError") {
@@ -129,9 +122,6 @@ var apiHandleError = (error, req, res, next) => {
         if(e.type === 'NotFoundError') {
             code = 404;
         }
-        if(e.type === 'AlreadyExistingError') {
-            code = 409;
-        }
 
         return res.status(code).json({
             error: "ApiError",
@@ -144,7 +134,7 @@ var apiHandleError = (error, req, res, next) => {
     next(error);
 };
 
-var mongoHandleError = (error, req, res, next) => {
+var databaseHandleError = (error, req, res, next) => {
 
 
     if(error instanceof DatabaseError) {
@@ -153,9 +143,15 @@ var mongoHandleError = (error, req, res, next) => {
         } else {
             delete error.stack;
         }
+        let code = 400;
+        let message = error.message;
+        if(error.name === DatabaseError.ERRORS_NAME && error.code === DatabaseError.DATABASE_ERR_CODES.DUPLICATE_ENTRY) {
+            code = 409;
+            message = "Entity already exist, target entity cannot be saved because another entity already contain unique fields with the same value.";
+        }
         return res.status(400).json({
             error: "DatabaseError",
-            message: error.message,
+            message: message,
             originalError: error
         });
     }
@@ -202,13 +198,13 @@ module.exports = {
     setErrorHandler: (app) => {
         let db = require('./database')(app.get('cfg').database);
         currentConf = app.get('cfg');
-        Errors.DatabaseError = db.errorType;
+        Errors.DatabaseError = db.errorClass;
 
         DatabaseError = Errors.DatabaseError;
 
         app.use(authHandleError);
         app.use(apiHandleError);
-        app.use(mongoHandleError);
+        app.use(databaseHandleError);
         app.use(defaultHandleError);
         app.use(anyHandleError);
 

@@ -28,9 +28,8 @@ function AccessController (cfg) {
             if(r[a] === ROLE_KEY.AUTENTICATED) {
                 if(getAccessRight(r[a]))  return true;
             } else if(r[a] === ROLE_KEY.ACTIVE && user.active === true) {
-
-
-            } else if(r[a] in (user.roles || [])) {
+                if(getAccessRight(r[a]))  return true;
+            } else if(r[a] in (user.roles || []) && user.active === true) {
                 if(getAccessRight(r[a]))  return true;
             }
         }
