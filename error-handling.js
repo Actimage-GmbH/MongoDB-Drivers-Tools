@@ -5,8 +5,6 @@ const ApiError = function(req) {
         this.path = req.path;
         this.req = req;
     }
-
-
 };
 ApiError.prototype = Object.create(Error.prototype);
 ApiError.prototype.constructor = ApiError;
@@ -149,7 +147,7 @@ var databaseHandleError = (error, req, res, next) => {
             code = 409;
             message = "Entity already exist, target entity cannot be saved because another entity already contain unique fields with the same value.";
         }
-        return res.status(400).json({
+        return res.status(code).json({
             error: "DatabaseError",
             message: message,
             originalError: error

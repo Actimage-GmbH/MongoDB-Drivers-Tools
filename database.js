@@ -22,15 +22,30 @@ function Collection (DB, name) {
         return response.ops.pop();
     });
     //update
-    this.update = async function (filter, obj) {
-        if(obj._id) delete obj._id;
-        let resp = await me.db.collection(name).update(filter || {}, {$set: obj}, {multiple: true});
+    this.update = async function (filter, obj, isRaw) {
+        let query;
+        if(!isRaw) {
+            if(obj._id) delete obj._id;
+            query = {$set: obj}
+        } else {
+            query = obj;
+        }
+        let resp = await me.db.collection(name).update(filter || {}, query, {multiple: true});
+        if(resp.result.nModified < 1) return [];
         return await me.db.collection(name).find(filter || {}).toArray();
     };
     //updateOne
-    this.updateById = async function (id, obj) {
-        if(obj._id) delete obj._id;
-        let resp = await me.db.collection(name).update({_id: new ObjectId(id)}, {$set: obj}, {multiple: false});
+    this.updateById = async function (id, obj, isRaw) {
+        let query;
+        if(!isRaw) {
+            if(obj._id) delete obj._id;
+            query = {$set: obj}
+        } else {
+            query = obj;
+        }
+
+        let resp = await me.db.collection(name).update({_id: new ObjectId(id)}, query, {multiple: false});
+        if(resp.result.nModified < 1) return null;
         return await me.db.collection(name).findOne({_id: new ObjectId(id)});
     };
     //deleteALl
