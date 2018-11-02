@@ -45,7 +45,7 @@ function Collection (DB, name) {
         }
 
         let resp = await me.db.collection(name).update({_id: new ObjectId(id)}, query, {multiple: false});
-        if(resp.result.nModified < 1) return null;
+        if(resp.result.n < 1) return null;
         return await me.db.collection(name).findOne({_id: new ObjectId(id)});
     };
 
