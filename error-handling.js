@@ -208,6 +208,8 @@ var defaultHandleError = (req, res) => {
     if(currentConf.debug) {
         console.warn(new Date(), "NotFoundError: ", req.path);
     }
+
+    if(excludedPath && res.path.match(excludedPath)) return ;
     //throw a 404 error for path
     return res.status(404).json({
         error: "Path Not Found",
@@ -222,16 +224,17 @@ var Errors = {
 };
 var DatabaseError;
 var currentConf;
+var excludedPath;
 
 module.exports = {
-    setErrorHandler: (app) => {
+    setErrorHandler: (app, exclude) => {
         let db = require('./database')(app.get('cfg').database);
         currentConf = app.get('cfg');
 
         //set up database error class for database errors handling
         Errors.DatabaseError = db.errorClass;
         DatabaseError = Errors.DatabaseError;
-
+        excludedPath = exclude;
         //set various error handlers for the app
         app.use(authHandleError);
         app.use(apiHandleError);

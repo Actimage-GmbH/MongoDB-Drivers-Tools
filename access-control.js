@@ -5,14 +5,14 @@ function AccessController (cfg) {
     //check if reqest path is under access control
     let checkPath = req => {
 
-        let access = roles[req.method.toUpperCase()+req.route.path];
+        let access = roles[req.method.toUpperCase()+(req.app.basePath || '')+req.route.path];
         return typeof access !== "undefined" && access !== null;
     };
 
     //check if given user can access the request
     let checkRole = (req, user) => {
         //retriev access definition with request methode and path
-        let access = roles[req.method.toUpperCase()+req.route.path];
+        let access = roles[req.method.toUpperCase()+(req.app.basePath || '')+req.route.path];
 
         //list roles
         let r = Object.keys(access);
@@ -38,7 +38,7 @@ function AccessController (cfg) {
                 if(getAccessRight(r[a]))  return true;
             } else if(r[a] === ROLE_KEY.ACTIVE && user.active === true) {
                 if(getAccessRight(r[a]))  return true;
-            } else if(r[a] in (user.roles || []) && user.active === true) {
+            } else if((user.roles || []).indexOf(r[a]) >= 0 && user.active === true) {
                 if(getAccessRight(r[a]))  return true;
             }
         }
