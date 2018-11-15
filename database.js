@@ -8,7 +8,11 @@ function Collection (DB, name, indexes) {
 
     if(indexes && Array.isArray(indexes)) {
         for (var ind = 0; ind < indexes.length; ind++) {
-            me.db.collection(name).ensureIndex(indexes[i], true);
+
+            me.db.collection(name).dropIndex(indexes[ind]+"_1", {unique: true}).catch(e => {
+            });
+
+            me.db.collection(name).createIndex(indexes[ind], {unique: true});
         }
     }
 
