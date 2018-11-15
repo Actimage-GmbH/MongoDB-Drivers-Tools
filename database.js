@@ -2,9 +2,15 @@ const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const assert = require('assert');
 
-function Collection (DB, name) {
+function Collection (DB, name, indexes) {
     this.db = DB.db;
     me = this;
+
+    if(indexes && Array.isArray(indexes)) {
+        for (var ind = 0; ind < indexes.length; ind++) {
+            me.db.collection(name).ensureIndex(indexes[i], true);
+        }
+    }
 
     //search in
     this.find = (async function (filter) {
@@ -51,14 +57,14 @@ function Collection (DB, name) {
 
     //deleteById
     this.deleteById = async function (id) {
-        let response = await me.db.collection(name).remove({_id: new ObjectId(id)});
+        let response = await me.db.collection(name).deleteOne({_id: new ObjectId(id)});
         if(response.result.nRemoved < 1) return null;
         return response.result;
     };
 
     //deleteALl
     this.deleteAll = async function (filter) {
-        let response = await me.db.collection(name).remove(filter);
+        let response = await me.db.collection(name).deleteMany(filter);
 
         return response;
     };
@@ -78,16 +84,33 @@ function DataBase (cfg) {
         };
     });
 
-    this.ready.then(() => {
-        me.gateways = new Collection(me, 'gateways');
+    let registeredCollections = [];
+    let initializedCollections = [];
+
+    function pushInCollection(col) {
+        initializedCollections.push(col);
+        if(initializedCollections.length == registeredCollections.length) {
+            me.colDefered.resolve();
+        }
+    }
+    me.collectionsReady = new Promise((resolve, reject) => {
+        me.colDefered = {
+            resolve: resolve,
+            reject: reject
+        };
     });
 
+
     //set up collection request helper for given collection name
-    this.registerCollection = name => {
+    this.registerCollection = (name, indexes) => {
+        registeredCollections.push(name);
         me.ready.then(() => {
-            me[name] = new Collection(me, name);
+            me[name] = new Collection(me, name, indexes);
+            pushInCollection(me[name]);
         });
     };
+
+
 
     //set ref to MongoError Class
     this.__driver = require('mongodb');
