@@ -87,6 +87,14 @@ function DataBase (cfg) {
             reject: reject
         };
     });
+    this.renewReadyPromise = () => {
+        this.ready = new Promise((resolve, reject) => {
+            me.defered = {
+                resolve: resolve,
+                reject: reject
+            };
+        });
+    };
 
     this.registeredCollections = [];
     this.initializedCollections = [];
@@ -191,10 +199,12 @@ const ensureConnection = (cfg, __db) => {
         c.base[cfg.name]= __db;
 
     } else {
-        //resolve database ready promise
-        __db.defered.resolve();
+
         //return alredy existing connection
         __db = DBConnections[cfg.url].base[cfg.name];
+        //resolve database ready promise
+        __db.renewReadyPromise();
+        __db.defered.resolve();
 
         return DBConnections[cfg.url];
     }
