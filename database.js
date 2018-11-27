@@ -179,7 +179,7 @@ const ensureConnection = (cfg, __db) => {
 
 
 
-    } else if(!DBConnections[cfg.url].base[name]){
+    } else if(!DBConnections[cfg.url].base[cfg.name]){
         //if connection already existe but for another database
         //set up database connection and save it to the current mongo connection
         let c = DBConnections[cfg.url];

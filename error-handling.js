@@ -133,14 +133,16 @@ var apiHandleError = (error, req, res, next) => {
         //default error code to Bad request
         let code = 400;
         let e = error.toJSON();
+        let type = "ApiError";
 
         //if error is of "not found" type change code to 404 > Not found
         if(e.type === 'NotFoundError') {
             code = 404;
+            type = e.type;
         }
 
         return res.status(code).json({
-            error: "ApiError",
+            error: type,
             message: error.message,
             statusCode: code,
             originalError: e
@@ -209,7 +211,7 @@ var defaultHandleError = (req, res) => {
         console.warn(new Date(), "NotFoundError: ", req.path);
     }
 
-    if(excludedPath && res.path.match(excludedPath)) return ;
+    if(excludedPath && req.path.match(excludedPath)) return ;
     //throw a 404 error for path
     return res.status(404).json({
         error: "Path Not Found",
