@@ -164,6 +164,7 @@ const ensureConnection = (cfg, __db) => {
                 client = await MongoClient.connect(url, options);
                 //save connection to database object and resolve database ready promise
                 __db.db = client.db(dbName);
+                console.log("prom2",__db.defered, __db.ready);
                 __db.defered.resolve();
             } catch (err) {
                 console.log("MongoRoot", err.stack);
@@ -192,6 +193,7 @@ const ensureConnection = (cfg, __db) => {
         //set up database connection and save it to the current mongo connection
         let c = DBConnections[cfg.url];
         __db.db = c.client.db(cfg.name);
+        console.log("prom1",__db.defered, __db.ready);
         //resolve database ready promise
         __db.defered.resolve();
         __db.client = c.client;
@@ -204,6 +206,7 @@ const ensureConnection = (cfg, __db) => {
         __db = DBConnections[cfg.url].base[cfg.name];
         //resolve database ready promise
         __db.renewReadyPromise();
+        console.log("prom",__db.defered, __db.ready);
         __db.defered.resolve();
 
         return DBConnections[cfg.url];
