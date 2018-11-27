@@ -100,8 +100,9 @@ function DataBase (cfg) {
     this.initializedCollections = [];
 
     function pushInCollection(col) {
-        this.initializedCollections.push(col);
-        if(this.initializedCollections.length == this.registeredCollections.length) {
+        if(!me.initializedCollections) me.initializedCollections = [];
+        me.initializedCollections.push(col);
+        if(me.initializedCollections.length == me.registeredCollections.length) {
             me.colDefered.resolve();
         }
     }
