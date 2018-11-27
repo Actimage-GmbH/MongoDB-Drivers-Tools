@@ -88,12 +88,12 @@ function DataBase (cfg) {
         };
     });
 
-    let registeredCollections = [];
-    let initializedCollections = [];
+    this.registeredCollections = [];
+    this.initializedCollections = [];
 
     function pushInCollection(col) {
-        initializedCollections.push(col);
-        if(initializedCollections.length == registeredCollections.length) {
+        this.initializedCollections.push(col);
+        if(this.initializedCollections.length == this.registeredCollections.length) {
             me.colDefered.resolve();
         }
     }
@@ -107,7 +107,7 @@ function DataBase (cfg) {
 
     //set up collection request helper for given collection name
     this.registerCollection = (name, indexes) => {
-        registeredCollections.push(name);
+        this.registeredCollections.push(name);
         me.ready.then(() => {
             me[name] = new Collection(me, name, indexes);
             pushInCollection(me[name]);
