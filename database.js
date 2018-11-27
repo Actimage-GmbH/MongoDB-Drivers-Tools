@@ -202,12 +202,13 @@ const ensureConnection = (cfg, __db) => {
         c.base[cfg.name]= __db;
 
     } else {
-
+        let prom = __db.ready;
+        let defer = __db.defered;
         //return alredy existing connection
         __db = DBConnections[cfg.url].base[cfg.name];
         //resolve database ready promise
-        __db.renewReadyPromise();
-        console.log("prom",__db.defered, __db.ready);
+        __db.ready = prom;
+        __db.defered = defer;
         __db.defered.resolve();
 
         return DBConnections[cfg.url];
