@@ -211,7 +211,8 @@ const ensureConnection = (cfg, __db) => {
         console.log('def',prom,defer,__db);
 
         //return alredy existing connection
-        __db = DBConnections[cfg.url].base[cfg.name];
+        __db.db = DBConnections[cfg.url].base[cfg.name].db;
+        __db.client = DBConnections[cfg.url].base[cfg.name].client;
 
         console.log('def2',__db.ready, __db);
 
