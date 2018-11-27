@@ -77,8 +77,7 @@ function Collection (DB, name, indexes) {
 function DataBase (cfg) {
     this.db = {};
     var me = this;
-    //connect to mongo or get opened connection if any
-    ensureConnection(cfg, this);
+
 
     //set up promise for database ready
     this.ready = new Promise((resolve, reject) => {
@@ -138,6 +137,10 @@ function DataBase (cfg) {
 
 
     this.close;
+
+
+    //connect to mongo or get opened connection if any
+    ensureConnection(cfg, this);
 
 };
 
@@ -205,10 +208,13 @@ const ensureConnection = (cfg, __db) => {
         let prom = __db.ready;
         let defer = __db.defered;
 
-        console.log('def',prom,defer);
+        console.log('def',prom,defer,__db);
 
         //return alredy existing connection
         __db = DBConnections[cfg.url].base[cfg.name];
+
+        console.log('def2',__db.ready, __db);
+
         //resolve database ready promise
         __db.ready = prom;
         __db.defered = defer;
