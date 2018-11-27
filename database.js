@@ -191,10 +191,11 @@ const ensureConnection = (cfg, __db) => {
         c.base[cfg.name]= __db;
 
     } else {
-        //return alredy existing connection
-        __db = DBConnections[cfg.url].base[cfg.name];
         //resolve database ready promise
         __db.defered.resolve();
+        //return alredy existing connection
+        __db = DBConnections[cfg.url].base[cfg.name];
+
         return DBConnections[cfg.url];
     }
 
