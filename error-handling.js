@@ -214,7 +214,7 @@ var defaultHandleError = (req, res) => {
     if(excludedPath && req.path.match(excludedPath)) return ;
     //throw a 404 error for path
     return res.status(404).json({
-        error: "Path Not Found",
+        error: "NotFoundError",
         message: "path "+req.path+" is not found",
         statusCode: 404
     });
