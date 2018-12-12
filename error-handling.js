@@ -246,6 +246,6 @@ module.exports = {
 
     },
 
-    Errors: Errors
-
+    Errors: Errors,
+    SocketErrors: require('./socket-error-handling')
 };
