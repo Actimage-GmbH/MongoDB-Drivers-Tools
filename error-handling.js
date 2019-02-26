@@ -34,6 +34,17 @@ ApiError.prototype.missingEntity = function (next) {
     next(this);
 };
 
+//method to generate conflict error for requested object
+ApiError.prototype.conflictedEntity = function (next) {
+    this.message = "Entity already exist, target entity cannot be saved because another entity already contain unique fields with the same value.";
+    this.e = {
+        name: "ConflictError",
+        details: []
+    };
+    //throw the Conflict error to the handler
+    next(this);
+};
+
 //method to set custom error type and message
 ApiError.prototype.setUpError = function (message, type, details) {
     this.message = message;
@@ -138,6 +149,13 @@ var apiHandleError = (error, req, res, next) => {
         //if error is of "not found" type change code to 404 > Not found
         if(e.type === 'NotFoundError') {
             code = 404;
+            type = e.type;
+        }
+
+        //check for 'duplicates' kind of errors
+        if(e.type === 'ConflictError') {
+            //set custom code - 409 => Conflict error
+            code = 409;
             type = e.type;
         }
 
