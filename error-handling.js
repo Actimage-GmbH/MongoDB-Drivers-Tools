@@ -95,10 +95,10 @@ var authHandleError = (error, req, res, next) => {
 
     //check error kind and handle Authentication errors
     if(error instanceof AuthError) {
-        if(currentConf.debug) {
-            //log the error on debug
-            console.warn(new Date(), "AuthError: ", error);
-        } else {
+        //log the error on debug
+        _console.debug("AuthError - Stack: ", error);
+
+        if(!currentConf.debug) {
             //remove the error stack if not on debug
             delete error.stack;
         }
@@ -116,7 +116,7 @@ var authHandleError = (error, req, res, next) => {
         if(e.type === "AccessError") {
             code = 403;
         }
-
+        _console.warn("API :: Auth error - ", e.type, ": ", code,",", e.message);
 
         return res.status(code).json({
             error: "AuthError",
@@ -134,10 +134,10 @@ var apiHandleError = (error, req, res, next) => {
 
     //check for Api error kind and handle them
     if(error instanceof ApiError) {
-        if(currentConf.debug) {
-            //log the error on debug
-            console.warn(new Date(), "ApiError: ", error);
-        } else {
+        //log the error on debug
+        _console.debug("ApiError - Stack: ", error);
+
+        if(!currentConf.debug) {
             //remove the error stack if not on debug
             delete error.stack;
         }
@@ -158,6 +158,7 @@ var apiHandleError = (error, req, res, next) => {
             code = 409;
             type = e.type;
         }
+        _console.warn("API :: Api error - ", e.type, ": ", code,",", e.message);
 
         return res.status(code).json({
             error: type,
@@ -174,10 +175,10 @@ var apiHandleError = (error, req, res, next) => {
 var databaseHandleError = (error, req, res, next) => {
     //check error type and handle database ones
     if(error instanceof DatabaseError) {
-        if(currentConf.debug) {
-            //log the error on debug
-            console.warn(new Date(), "DatabaseError: ", error);
-        } else {
+        //log the error on debug
+        _console.debug("DatabaseError - Stack: ", error);
+
+        if(!currentConf.debug) {
             //remove the error stack if not on debug
             delete error.stack;
         }
@@ -191,11 +192,12 @@ var databaseHandleError = (error, req, res, next) => {
             code = 409;
             message = "Entity already exist, target entity cannot be saved because another entity already contain unique fields with the same value.";
         }
-
+        _console.error("API :: Database error : ", code,",", message);
         //throw database error
         return res.status(code).json({
             error: "DatabaseError",
             message: message,
+            statusCode: code,
             originalError: error
         });
     }
@@ -206,10 +208,10 @@ var databaseHandleError = (error, req, res, next) => {
 //get any undefined error, execution errors are catched here
 var anyHandleError = (error, req, res, next) => {
 
-    if(currentConf.debug) {
-        //log the error on debug
-        console.warn(new Date(), "Error: ", error);
-    } else {
+    //log the error on debug
+    _console.debug("UnknownError - Stack: ", error);
+
+    if(!currentConf.debug) {
         //remove the error stack if not on debug
         delete error.stack;
     }
@@ -225,11 +227,12 @@ var anyHandleError = (error, req, res, next) => {
 
 //get unhandled errors which are happening on unhandled path
 var defaultHandleError = (req, res) => {
-    if(currentConf.debug) {
-        console.warn(new Date(), "NotFoundError: ", req.path);
-    }
+
+    _console.debug('API :: path not found for this api');
 
     if(excludedPath && req.path.match(excludedPath)) return ;
+
+    _console.warn("API :: path not found error - raw 404");
     //throw a 404 error for path
     return res.status(404).json({
         error: "NotFoundError",
@@ -245,11 +248,31 @@ var Errors = {
 var DatabaseError;
 var currentConf;
 var excludedPath;
+var _console;
 
 module.exports = {
-    setErrorHandler: (app, exclude) => {
+    setErrorHandler: (app, exclude, setLog) => {
         let db = require('./database')(app.get('cfg').database);
         currentConf = app.get('cfg');
+        currentConf.debug = currentConf.debug || process.env.DEBUG;
+
+        if(setLog) {
+            _console = console;
+            //handle log level
+            if(!process.env.DEBUG) {
+                _console.debug = () => null;
+            }
+        } else {
+            _console = {
+                log: () => null,
+                info: () => null,
+                warn: () => null,
+                debug: () => null,
+                error: () => null
+            }
+        }
+
+
 
         //set up database error class for database errors handling
         Errors.DatabaseError = db.errorClass;
