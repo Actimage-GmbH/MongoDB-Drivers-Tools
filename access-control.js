@@ -5,7 +5,7 @@ function AccessController (cfg) {
     //check if reqest path is under access control
     let checkPath = req => {
 
-        let access = roles[req.method.toUpperCase()+(req.app.basePath || '')+req.route.path];
+        let access = roles[req.method.toUpperCase() + (req.app.basePath || req.baseUrl || '') + req.route.path];
         return typeof access !== "undefined" && access !== null;
     };
 
