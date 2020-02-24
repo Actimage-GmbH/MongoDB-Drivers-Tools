@@ -1,7 +1,7 @@
 FROM nginx:latest
 
 RUN apt-get update
-RUN apt-get install fail2ban
+RUN apt-get install fail2ban -y
 
 COPY ./jail.local /etc/fail2ban/jail.local
 COPY ./nginx-ipban.conf /etc/fail2ban/action.d/nginx-ipban.conf
