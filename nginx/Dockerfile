@@ -14,4 +14,4 @@ VOLUME [ "/etc/sslcerts","/etc/nginx/conf.d","/etc/nginx/nginx.conf","/var/www/p
 
 EXPOSE 443 80
 
-CMD  service fail2ban restart && service nginx restart && tail -f /var/log/nginx/access.log
+CMD  service fail2ban restart && service nginx restart && tail -f /var/log/nginx/access.log > /var/log/nginx/out.log && bash
