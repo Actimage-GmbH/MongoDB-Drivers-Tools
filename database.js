@@ -160,7 +160,9 @@ const ensureConnection = (cfg, __db) => {
             let client;
 
             var options = {
-                socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }
+                socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 },
+                tlsAllowInvalidCertificates: true,
+                tlsAllowInvalidHostnames: true
             };
 
             try {
