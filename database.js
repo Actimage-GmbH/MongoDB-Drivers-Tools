@@ -144,8 +144,8 @@ function DataBase (cfg) {
     ensureConnection(cfg, this);
 
 };
+function MainExporter(cfg) {return new DataBase(cfg);}
 
-const __db = function MainExporter(cfg) {return new DataBase(cfg);}
 
  //set ref to MongoError Class
  MainExporter.prototype.__driver = require('mongodb');
@@ -271,4 +271,4 @@ const ensureConnection = (cfg, __db) => {
 
  */
 
-module.exports = __db;
+module.exports = MainExporter;
