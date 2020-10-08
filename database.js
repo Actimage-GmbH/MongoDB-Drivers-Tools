@@ -129,13 +129,14 @@ function DataBase (cfg) {
     this.errorClass = require('mongodb').MongoError;
     this.errorName = "MongoError";
 
+
     //set some const for specific errors handling
     this.errorClass.DATABASE_ERR_CODES = {
         DUPLICATE_ENTRY: 11000
     };
     this.errorClass.ERRORS_NAME = "MongoError";
-
-
+    
+  
     this.close;
 
 
@@ -144,12 +145,27 @@ function DataBase (cfg) {
 
 };
 
-const __db = (cfg) => new DataBase(cfg);
+const __db = function MainExporter(cfg) {return new DataBase(cfg);}
+
+ //set ref to MongoError Class
+ MainExporter.prototype.__driver = require('mongodb');
+ let errorClass = require('mongodb').MongoError;
+ MainExporter.prototype.errorName = "MongoError";
+
+
+ //set some const for specific errors handling
+ errorClass.DATABASE_ERR_CODES = {
+     DUPLICATE_ENTRY: 11000
+ };
+ errorClass.ERRORS_NAME = "MongoError";
+ 
+ MainExporter.prototype.errorClass = errorClass;
+
 
 const DBConnections = {};
 
 const ensureConnection = (cfg, __db) => {
-    //check if there isn't a connection with to this database already opened
+    //check if there isn't a connection to this database already opened
     if(!DBConnections[cfg.url]) {
         //Create database connection
         (async function() {
