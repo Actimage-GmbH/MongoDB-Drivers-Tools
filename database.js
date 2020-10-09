@@ -148,9 +148,9 @@ function MainExporter(cfg) {return new DataBase(cfg);}
 
 
  //set ref to MongoError Class
- MainExporter.prototype.__driver = require('mongodb');
- let errorClass = require('mongodb').MongoError;
- MainExporter.prototype.errorName = "MongoError";
+ MainExporter.__driver = require('mongodb');
+ let errorClass = MainExporter.__driver.MongoError;
+ MainExporter.errorName = "MongoError";
 
 
  //set some const for specific errors handling
@@ -159,7 +159,7 @@ function MainExporter(cfg) {return new DataBase(cfg);}
  };
  errorClass.ERRORS_NAME = "MongoError";
  
- MainExporter.prototype.errorClass = errorClass;
+ MainExporter.errorClass = errorClass;
 
 
 const DBConnections = {};
