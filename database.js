@@ -1,78 +1,8 @@
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const assert = require('assert');
-
-function Collection (DB, name, indexes) {
-    this.db = DB.db;
-    me = this;
-
-    if(indexes && Array.isArray(indexes)) {
-        for (var ind = 0; ind < indexes.length; ind++) {
-
-            me.db.collection(name).dropIndex(indexes[ind]+"_1", {unique: true}).catch(e => {
-            });
-
-            me.db.collection(name).createIndex(indexes[ind], {unique: true});
-        }
-    }
-
-    //search in
-    this.find = (async function (filter) {
-        let response = await me.db.collection(name).find(filter || {}).toArray();
-        return response;
-    });
-    //find one
-    this.findById = (async function (id) {
-        let response = await me.db.collection(name).findOne({_id: new ObjectId(id)});
-        return response;
-    });
-    //insert one
-    this.insertOne =  (async function (user) {
-        let response = await me.db.collection(name).insertOne(user || {});
-        return response.ops.pop();
-    });
-    //update
-    this.update = async function (filter, obj, isRaw) {
-        let query;
-        if(!isRaw) {
-            if(obj._id) delete obj._id;
-            query = {$set: obj}
-        } else {
-            query = obj;
-        }
-        let resp = await me.db.collection(name).update(filter || {}, query, {multiple: true});
-        if(resp.result.nModified < 1) return [];
-        return await me.db.collection(name).find(filter || {}).toArray();
-    };
-    //updateOne
-    this.updateById = async function (id, obj, isRaw) {
-        let query;
-        if(!isRaw) {
-            if(obj._id) delete obj._id;
-            query = {$set: obj}
-        } else {
-            query = obj;
-        }
-
-        let resp = await me.db.collection(name).update({_id: new ObjectId(id)}, query, {multiple: false});
-        if(resp.result.n < 1) return null;
-        return await me.db.collection(name).findOne({_id: new ObjectId(id)});
-    };
-
-    //deleteById
-    this.deleteById = async function (id) {
-        let response = await me.db.collection(name).deleteOne({_id: new ObjectId(id)});
-        if(response.result.nRemoved < 1) return null;
-        return response.result;
-    };
-
-    //deleteALl
-    this.deleteAll = async function (filter) {
-        let response = await me.db.collection(name).deleteMany(filter);
-
-        return response;
-    };
-}
+const Collection = require('./collection').Collection;
+const Bucket = require('./bucket').Bucket;
 
 function DataBase (cfg) {
     this.db = {};
@@ -97,6 +27,8 @@ function DataBase (cfg) {
 
     this.registeredCollections = [];
     this.initializedCollections = [];
+    this.registeredBuckets = [];
+    this.initializedBuckets = [];
 
     function pushInCollection(col) {
         if(!me.initializedCollections) me.initializedCollections = [];
@@ -105,8 +37,22 @@ function DataBase (cfg) {
             me.colDefered.resolve();
         }
     }
+
+    function pushInBucket(buk) {
+        if(!me.initializedBuckets) me.initializedBuckets = [];
+        me.initializedBuckets.push(buk);
+        if(me.initializedBuckets.length == me.registeredBuckets.length) {
+            me.bukDefered.resolve();
+        }
+    }
     me.collectionsReady = new Promise((resolve, reject) => {
         me.colDefered = {
+            resolve: resolve,
+            reject: reject
+        };
+    });
+    me.bucketsReady = new Promise((resolve, reject) => {
+        me.bukDefered = {
             resolve: resolve,
             reject: reject
         };
@@ -119,6 +65,15 @@ function DataBase (cfg) {
         me.ready.then(() => {
             me[name] = new Collection(me, name, indexes);
             pushInCollection(me[name]);
+        });
+    };
+
+     //set up bucket request helper for given bucket name
+     this.registerBucket = (name, indexes) => {
+        this.registeredBucket.push(name);
+        me.ready.then(() => {
+            me[name] = new Bucket(me, name, indexes);
+            pushInBucket(me[name]);
         });
     };
 
