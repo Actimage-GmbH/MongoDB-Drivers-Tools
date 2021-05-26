@@ -1,10 +1,15 @@
 const MongoBucket = require('mongodb').GridFSBucket;
-
+const fs = require('fs');
 
 function Bucket (DB, name) {
     this.db = DB.db;
-    me = this;
-    this._bucket = new MongoBucket(this.db, {bucketName: name});
+    var me = this;
+    DB.ready.then(e => {
+
+        this._bucket = new MongoBucket(this.db, {bucketName: name});
+        console.warn("buck", me._bucket);
+    })
+
 
     //search in
     this.find = (async function (filter) {
@@ -27,14 +32,22 @@ function Bucket (DB, name) {
     });
 
     //upload one
-    this.uploadOne =  (async function (filename, fileStream) {
+    this.uploadOne =  (async function (filename, buffer) {
         if(!filename) throw new Error("Missing File name");
 
-        let uploadStream = await me._bucket.openUploadStream(filename);
-        fileStream.pipe(uploadStream);
-        let _p = new Promise((reject, resolve) => {
+        let uploadStream;
+        try {
+            //console.warn('buffer', buffer.toString('utf8').substr(0,100));
+            uploadStream = await me._bucket.openUploadStream(filename);
+            uploadStream.end(buffer);
+
+        } catch(e) {
+            console.warn('error on upload', e.message);
+        }
+        
+        let _p = new Promise((resolve, reject) => {
             uploadStream.on('finish', (f) => {
-                resolve(f, uploadStream);
+                resolve(f);
             });
             uploadStream.on("error",reject);
         });
@@ -42,14 +55,27 @@ function Bucket (DB, name) {
     });
 
     //download one
-    this.downloadOne =  (async function (filename, fileStream) {
+    this.downloadOne =  (async function (filename) {
         if(!filename) throw new Error("Missing File name");
-
-        let dlStream = await me._bucket.openDownloadStreamByName(filename);
-        dlStream.pipe(fileStream);
-        let _p = new Promise((reject, resolve) => {
-            dlStream.on('file', (f) => {
-                resolve(f, dlStream);
+        let dlStream;
+        let res = {};
+       
+        let _p = new Promise(async (resolve, reject) => {
+            
+            let bufs = [];
+            try {
+                dlStream = await me._bucket.openDownloadStreamByName(filename);
+                dlStream.on('data', chunk => bufs.push(chunk));
+            } catch(e) {
+                console.warn('error on dl');
+            }
+            dlStream.on('file', (file) => {
+                res.metadata = file;
+            });
+            //
+            dlStream.on('end', () => {
+                res.data = Buffer.concat(bufs);
+                resolve(res);
             });
             dlStream.on("error",reject);
         });
@@ -57,14 +83,28 @@ function Bucket (DB, name) {
     });
 
     //download one revision
-    this.downloadOneRevision =  (async function (id, fileStream) {
-        if(!filename) throw new Error("Missing File name");
+    this.downloadOneRevision =  (async function (id) {
+        if(!id) throw new Error("Missing File id");
 
-        let dlStream = await me._bucket.openDownloadStream(id);
-        dlStream.pipe(fileStream);
-        let _p = new Promise((reject, resolve) => {
-            dlStream.on('file', (f) => {
-                resolve(f, dlStream);
+        let dlStream;
+        let res = {};
+       
+        let _p = new Promise(async (resolve, reject) => {
+            
+            let bufs = [];
+            try {
+                dlStream = await me._bucket.openDownloadStream(id);
+                dlStream.on('data', chunk => bufs.push(chunk));
+            } catch(e) {
+                console.warn('error on dl');
+            }
+            dlStream.on('file', (file) => {
+                res.metadata = file;
+            });
+            //
+            dlStream.on('end', () => {
+                res.data = Buffer.concat(bufs);
+                resolve(res);
             });
             dlStream.on("error",reject);
         });
@@ -89,7 +129,6 @@ function Bucket (DB, name) {
     //delete One Revision
     this.deleteAll = async function (id) {
         let response =  await me._bucket.delete(new ObjectId(id));
-
         return response;
     };
 }

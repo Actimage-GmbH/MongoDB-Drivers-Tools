@@ -1,3 +1,7 @@
+const ObjectId = require('mongodb').ObjectId;
+
+
+
 function Collection (DB, name, indexes) {
     this.db = DB.db;
     me = this;
