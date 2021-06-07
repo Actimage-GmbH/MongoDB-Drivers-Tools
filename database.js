@@ -70,7 +70,7 @@ function DataBase (cfg) {
 
      //set up bucket request helper for given bucket name
      this.registerBucket = (name, indexes) => {
-        this.registeredBucket.push(name);
+        this.registeredBuckets.push(name);
         me.ready.then(() => {
             me[name] = new Bucket(me, name, indexes);
             pushInBucket(me[name]);
